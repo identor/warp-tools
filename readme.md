@@ -122,7 +122,7 @@ warp migrate:update <id> [destination]
 For example:
 
 ```bash
-warp migration:save create-alien-table
+warp migration:update create-alien-table
 [Warp Tools 2016-07-01 09:00:55] Updating migration `201607010900-create-alien-table`...
 [Warp Tools 2016-07-01 09:00:55] `201607010900-create-alien-table.json` saved!
 ```
