@@ -1,0 +1,677 @@
+#! /usr/bin/env node
+
+var program = require('commander');
+var moment = require('moment-timezone');
+var path = require('path');
+var Promise = require('promise');
+var utils = require('./utils');
+var pakg = require('../package.json');
+
+// Prepare log header
+function logHeader() {
+    return '[Warp Tools ' + moment().tz('UTC').format('YYYY-MM-DD HH:mm:ss')  + ']';
+}
+
+// Set log header
+utils.setLogHeader(logHeader);
+
+// Set options
+program
+    .version(pakg.version)
+    .option('-c, --config [file]', 'Config File')
+    .option('-s, --server [url]', 'Server URL')
+    .option('-a, --api [key]', 'API Key')
+    .option('-m, --master [key]', 'Master Key');
+
+/**
+ * Initialize Warp tools for an existing project
+ * 
+ * @params options
+ * @result warp-tools.json
+ */
+program
+    .command('init')
+    .action(function() {
+        console.log(logHeader(), 'Initializing...');
+        
+        var options = {
+            baseURL: program.server || 'http://localhost:3000/api/1',
+            apiKey: program.api || '',
+            masterKey: program.master || ''
+        };
+        
+        // Generate application
+        Promise.resolve()
+        .then(function() {
+            if(!program.server)
+                return utils.ask('Enter Base URL [http://localhost:3000/api/1]: ');
+            else
+                return;
+        })
+        .then(function(baseURL) {
+            if(!program.server) 
+                options.baseURL = baseURL || options.baseURL;
+
+            if(!program.api)
+                return utils.ask('Enter API Key: ');
+            else
+                return;
+        })
+        .then(function(apiKey) {
+            if(!program.api)
+                options.apiKey = apiKey || options.apiKey;
+            
+            if(!program.master)
+                return utils.ask('Enter Master Key: ');
+            else
+                return;
+        })
+        .then(function(masterKey) {
+            if(!program.master)
+                options.masterKey = masterKey || options.masterKey;
+            return;
+        })
+        .then(function() {
+            process.stdin.destroy();
+            return initApplication(options);
+        })
+        .catch(function(err) {
+            console.error(logHeader(), err.message, err.stack);
+            process.exit();
+        });
+    });
+
+/**
+ * Create new Warp project
+ * 
+ * @params app_name, destination
+ * @result project directory
+ */
+program
+    .command('new <appName> [destination]')
+    .action(function(appName, destination) {
+        console.log(logHeader(), 'Creating `' + appName + '`...');
+        destination = destination || appName;
+        
+        var options = {
+            apiKey: (Math.random()*1e32).toString(36) + (Math.random()*1e32).toString(36),
+            masterKey: (Math.random()*1e32).toString(36) + (Math.random()*1e32).toString(36),
+            dbHost: 'localhost',
+            dbPort: 3306,
+            dbUser: 'root',
+            dbPassword: '',
+            dbDefault: ''
+        };
+        
+        // Generate application
+        utils.checkDirectory(destination)
+        .then(function(empty) {
+            if(!empty)
+                return utils.confirm('Destination is not empty, continue? [y/N] ', '[ABORTED] Creation aborted');
+            else
+                return;
+        })
+        .then(function() {
+            return utils.ask('Enter Desired API Key [auto-generated key]: ');
+        })
+        .then(function(apiKey) {
+            options.apiKey = apiKey || options.apiKey;
+            return utils.ask('Enter Desired Master Key [auto-generated key]: ');
+        })
+        .then(function(masterKey) {
+            options.masterKey = masterKey || options.masterKey;
+            return utils.ask('Enter DB Host [localhost]: ');
+        })
+        .then(function(dbHost) {
+            options.dbHost = dbHost || options.dbHost;
+            return utils.ask('Enter DB Port [3306]: ');
+        })
+        .then(function(dbPort) {
+            options.dbPort = parseInt(dbPort || options.dbPort);
+            return utils.ask('Enter DB User [root]: ');
+        })
+        .then(function(dbUser) {
+            options.dbUser = dbUser || options.dbUser;
+            return utils.ask('Enter DB Password: ');
+        })
+        .then(function(dbPassword) {
+            options.dbPassword = dbPassword || options.dbPassword;
+            return utils.ask('Enter Default DB: ');
+        })
+        .then(function(dbDefault) {
+            options.dbDefault = dbDefault || options.dbDefault;
+            return;
+        })
+        .then(function() {
+            process.stdin.destroy();
+            return createApplication(appName, destination, options);
+        })
+        .then(function() {
+            return initApplication({ baseURL: 'localhost:3000', apiKey: options.apiKey, masterKey: options.masterKey });
+        })
+        .catch(function(err) {
+            console.error(logHeader(), err.message, err.stack);
+            process.exit();
+        });
+    });
+
+/**
+ * Create Migration File
+ * 
+ * @params options
+ * @result migration-file.json
+ */
+program
+    .command('migration:new <name> [destination]')
+    .action(function(name, destination) {  
+        // Create migration id      
+        var id = moment().tz('UTC').format('YYYYMMDDHHmm') + '-' + name;
+        console.log(logHeader(), 'Creating migration `' + id + '`...');
+
+        // Generate migration file
+        Promise.resolve()
+        .then(function() {
+            if(destination) 
+                return utils.checkDirectory(destination)
+            else
+                return false;
+        })
+        .then(function(empty) {
+            if(empty)
+                throw new Error('Target directory does not exist');
+            else
+                return;
+        })
+        .then(function() {
+            process.stdin.destroy();
+            return createMigration(id, destination);
+        })
+        .catch(function(err) {
+            console.error(logHeader(), err.message, err.stack);
+            process.exit();
+        });
+    });
+
+/**
+ * Save Migration File
+ * 
+ * @params options
+ * @result migration-file.json
+ */
+program
+    .command('migration:save <id> [destination]')
+    .action(function(id, destination) {
+        // Check destination
+        destination = destination || 'app/server/migrations/';
+
+        // Create migration id
+        console.log(logHeader(), 'Saving migration `' + id + '`...');
+
+        // Saving migration
+        Promise.resolve()
+        .then(function() {
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var acfg = configFile? JSON.parse(configFile) : {};
+            var options = {
+                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                apiKey: program.api || acfg.apiKey || '',
+                masterKey: program.master || acfg.masterKey || ''
+            };
+
+            if(program.config)
+            {
+                var cfg = JSON.parse(utils.loadFile(path.join(process.cwd(), program.config)));
+                options.baseURL = cfg.baseURL || options.baseURL;
+                options.apiKey = cfg.apiKey || options.apiKey;
+                options.masterKey = cfg.masterKey || options.masterKey;
+            }
+
+            return options;
+        })
+        .then(function(options) {
+            var file = path.join(process.cwd(), destination + '/' + id +'.json');
+            var migration = JSON.parse(utils.loadFile(file));
+            var config = { 
+                baseURL: options.baseURL,
+                apiKey: options.apiKey, 
+                masterKey: options.masterKey,
+                data: migration
+            };
+            return saveMigration(config);
+        })
+        .then(function(result) {
+            console.log(logHeader(), '`' + id + '` saved!');
+        })
+        .catch(function(err) {
+            console.error(logHeader(), err);
+            process.exit();
+        });
+    });
+
+/**
+ * Update Migration File
+ * 
+ * @params options
+ * @result migration-file.json
+ */
+program
+    .command('migration:update <id> [destination]')
+    .action(function(id, destination) {
+        // Check destination
+        destination = destination || 'app/server/migrations/';
+
+        // Create migration id
+        console.log(logHeader(), 'Updating migration `' + id + '`...');
+
+        // Saving migration
+        Promise.resolve()
+        .then(function() {
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var acfg = configFile? JSON.parse(configFile) : {};
+            var options = {
+                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                apiKey: program.api || acfg.apiKey || '',
+                masterKey: program.master || acfg.masterKey || ''
+            };
+
+            if(program.config)
+            {
+                var cfg = JSON.parse(utils.loadFile(path.join(process.cwd(), program.config)));
+                options.baseURL = cfg.baseURL || options.baseURL;
+                options.apiKey = cfg.apiKey || options.apiKey;
+                options.masterKey = cfg.masterKey || options.masterKey;
+            }
+
+            return options;
+        })
+        .then(function(options) {
+            var file = path.join(process.cwd(), destination + '/' + id +'.json');
+            var migration = JSON.parse(utils.loadFile(file));
+            var config = { 
+                baseURL: options.baseURL,
+                apiKey: options.apiKey, 
+                masterKey: options.masterKey,
+                data: migration
+            };
+            return updateMigration(config);
+        })
+        .then(function(result) {
+            console.log(logHeader(), '`' + id + '` saved!');
+        })
+        .catch(function(err) {
+            console.error(logHeader(), err);
+            process.exit();
+        });
+    });
+
+/**
+ * Commit Migrations
+ * 
+ * @params options
+ * @result migration_ids
+ */
+program
+    .command('migration:commit')
+    .action(function() {
+        // Commiting migrations
+        console.log(logHeader(), 'Committing migrations...');
+
+        // Commiting migrations
+        Promise.resolve()
+        .then(function() {
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var acfg = configFile? JSON.parse(configFile) : {};
+            var options = {
+                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                apiKey: program.api || acfg.apiKey || '',
+                masterKey: program.master || acfg.masterKey || ''
+            };
+
+            if(program.config)
+            {
+                var cfg = JSON.parse(utils.loadFile(path.join(process.cwd(), program.config)));
+                options.baseURL = cfg.baseURL || options.baseURL;
+                options.apiKey = cfg.apiKey || options.apiKey;
+                options.masterKey = cfg.masterKey || options.masterKey;
+            }
+
+            return options;
+        })
+        .then(function(options) {
+            var config = { 
+                baseURL: options.baseURL,
+                apiKey: options.apiKey, 
+                masterKey: options.masterKey
+            };
+            return commitMigrations(config);
+        })
+        .then(function(response) {
+            console.log(logHeader(), response);
+        })
+        .catch(function(err) {
+            console.error(logHeader(), err);
+            process.exit();
+        });
+    });
+
+/**
+ * Revert Migration
+ * 
+ * @params options
+ * @result migration_ids
+ */
+program
+    .command('migration:revert')
+    .action(function() {
+        // Reverting latest migration
+        console.log(logHeader(), 'Reverting latest migration...');
+
+        // Reverting latest migration
+        Promise.resolve()
+        .then(function() {
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var acfg = configFile? JSON.parse(configFile) : {};
+            var options = {
+                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                apiKey: program.api || acfg.apiKey || '',
+                masterKey: program.master || acfg.masterKey || ''
+            };
+
+            if(program.config)
+            {
+                var cfg = JSON.parse(utils.loadFile(path.join(process.cwd(), program.config)));
+                options.baseURL = cfg.baseURL || options.baseURL;
+                options.apiKey = cfg.apiKey || options.apiKey;
+                options.masterKey = cfg.masterKey || options.masterKey;
+            }
+
+            return options;
+        })
+        .then(function(options) {
+            var config = { 
+                baseURL: options.baseURL,
+                apiKey: options.apiKey, 
+                masterKey: options.masterKey
+            };
+            return revertMigration(config);
+        })
+        .then(function(response) {
+            console.log(logHeader(), response);
+        })
+        .catch(function(err) {
+            console.error(logHeader(), err);
+            process.exit();
+        });
+    });
+    
+/**
+ * Reset Migrations
+ * 
+ * @params options
+ * @result migration_ids
+ */
+program
+    .command('migration:reset')
+    .action(function() {
+        // Resetting migrations
+        console.log(logHeader(), 'Resetting latest migration...');
+
+        // Resetting migrations
+        Promise.resolve()
+        .then(function() {
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var acfg = configFile? JSON.parse(configFile) : {};
+            var options = {
+                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                apiKey: program.api || acfg.apiKey || '',
+                masterKey: program.master || acfg.masterKey || ''
+            };
+
+            if(program.config)
+            {
+                var cfg = JSON.parse(utils.loadFile(path.join(process.cwd(), program.config)));
+                options.baseURL = cfg.baseURL || options.baseURL;
+                options.apiKey = cfg.apiKey || options.apiKey;
+                options.masterKey = cfg.masterKey || options.masterKey;
+            }
+
+            return options;
+        })
+        .then(function(options) {
+            var config = { 
+                baseURL: options.baseURL,
+                apiKey: options.apiKey, 
+                masterKey: options.masterKey
+            };
+            return resetMigrations(config);
+        })
+        .then(function(response) {
+            console.log(logHeader(), response);
+        })
+        .catch(function(err) {
+            console.error(logHeader(), err);
+            process.exit();
+        });
+    });
+
+// Parse program
+program.parse(process.argv);
+
+// Create Application
+function createApplication(appName, path, options) {
+
+    // JavaScript
+    var api = utils.loadTemplate('js/api.js');
+    var app = utils.loadTemplate('js/app.js');
+    var user = utils.loadTemplate('js/user.js');
+    var session = utils.loadTemplate('js/session.js');
+    var www = utils.loadTemplate('js/www');
+    var index = utils.loadTemplate('js/index.js');
+    var indexHtm = utils.loadTemplate('htm/index.htm');
+    var gitignore = utils.loadTemplate('gitignore');
+    var main = utils.loadTemplate('js/main.js');
+    var migration = utils.loadTemplate('js/initial-migration.json');
+    
+    // Create package.json
+    var pkg = {
+        name: appName, 
+        version: '0.0.0', 
+        private: true, 
+        scripts: { start: 'node ./bin/www' }, 
+        dependencies: {
+            'express': '^4.13.4',
+            'moment-timezone': '^0.5.4',
+            'morgan': '^1.7.0',
+            'promise': '^7.1.1',
+            'underscore': '^1.8.3',
+            'warp-sdk-js': '^1.1.7',
+            'warp-server': '^2.3.18'
+        }
+    };
+    
+    // Update API config
+    api = api.replace('__apiKey__', options.apiKey);
+    api = api.replace('__masterKey__', options.masterKey);
+    api = api.replace('__dbHost__', options.dbHost);
+    api = api.replace('__dbPort__', options.dbPort);
+    api = api.replace('__dbUser__', options.dbUser);
+    api = api.replace('__dbPassword__', options.dbPassword);
+    api = api.replace('__dbDefault__', options.dbDefault);
+
+    // Update migration file
+    var migrationID = moment().tz('UTC').format('YYYYMMDDHHmm') + '-initial-migration';
+    migration = migration.replace('__id__', migrationID)
+
+    utils.mkdir(path)
+    .then(function(){
+        // Write root files
+        utils.write(path + '/package.json', JSON.stringify(pkg, null, 2) + '\n');
+        utils.write(path + '/app.js', app);
+        utils.write(path + '/.gitignore', gitignore);
+        
+        // Make public directory
+        utils.mkdir(path + '/public').then(function() {
+            utils.mkdir(path + '/public/javascripts');
+            utils.mkdir(path + '/public/images');
+            utils.mkdir(path + '/public/stylesheets');
+            utils.mkdir(path + '/public/storage');
+        });
+        
+        // Make app directory
+        utils.mkdir(path + '/app').then(function() {
+                // Make app server
+                utils.mkdir(path + '/app/server').then(function() {
+                    // Write API
+                    utils.write(path + '/app/server/api.js', api);
+                    
+                    // Make models directory
+                    utils.mkdir(path + '/app/server/models').then(function() {
+                        utils.write(path + '/app/server/models/user.js', user);
+                        utils.write(path + '/app/server/models/session.js', session);
+                    });
+                
+                    // Make functions directory
+                    utils.mkdir(path + '/app/server/functions').then(function() {
+                        utils.write(path + '/app/server/functions/.gitkeep', '');
+                    });
+
+                    // Make migrations directory
+                    utils.mkdir(path + '/app/server/migrations').then(function() {
+                        utils.write(path + '/app/server/migrations/.gitkeep', '');
+                        utils.write(path + '/app/server/migrations/' + migrationID + '.json', migration);
+                    });
+                    
+                    // Make queues directory
+                    utils.mkdir(path + '/app/server/queues').then(function() {
+                        utils.write(path + '/app/server/queues/.gitkeep', '');
+                    });
+                    
+                    // Make routes directory
+                    utils.mkdir(path + '/app/server/routes').then(function(){
+                        utils.write(path + '/app/server/routes/index.js', index);
+                    });
+                    
+                    // Make views directory
+                    utils.mkdir(path + '/app/server/views').then(function(){
+                        utils.write(path + '/app/server/views/index.htm', indexHtm);
+                    });
+                });
+                
+                // Make app client
+                utils.mkdir(path + '/app/client').then(function() {
+                    // Make subclasses directory
+                    utils.mkdir(path + '/app/client/subclasses').then(function() {
+                       utils.write(path + '/app/client/subclasses/.gitkeep', ''); 
+                    });
+                    
+                    // Write main.js
+                    utils.write(path + '/app/client/main.js', main);
+                });
+        });
+        
+        // Make bin directory
+        utils.mkdir(path + '/bin').then(function(){
+            utils.write(path + '/bin/www', www, 0755);
+        });        
+    });
+}
+
+// Initialize Application
+function initApplication(options) {
+    // Create warp-config.json
+    var cfg = {
+        baseURL: options.baseURL,
+        apiKey: options.apiKey,
+        masterKey: options.masterKey
+    };
+
+    utils.write('warp-config.json', JSON.stringify(cfg, null, 2) + '\n');
+}
+
+// Create migration file
+function createMigration(id, destination) {
+    // Create migration file
+    var mgr = {
+        id: id,
+        up: {
+            create: {},
+            alter: {},
+            drop: []
+        },
+        down: {
+            create: {},
+            alter: {},
+            drop: []
+        }
+    };
+
+    if(!destination) destination = 'app/server/migrations';
+
+    return utils.checkDirectory(destination).then(function(empty) {
+        if(!empty)
+        {
+            return utils.mkdir(destination).then(function() {
+                return utils.write(destination + '/' + id + '.json', JSON.stringify(mgr, null, 2) + '\n');
+            });
+        }
+        else
+            return utils.write(id + '.json', JSON.stringify(mgr, null, 2) + '\n');
+    });
+}
+
+// Save migration file
+function saveMigration(options) {
+    // Save migration file
+    var config = { 
+        baseURL: options.baseURL, 
+        apiKey: options.apiKey, 
+        masterKey: options.masterKey,
+        data: options.data
+    };
+    return utils.http('post', 'migrations', config);
+}
+
+// Update migration file
+function updateMigration(options) {
+    // Save migration file
+    var config = { 
+        baseURL: options.baseURL, 
+        apiKey: options.apiKey, 
+        masterKey: options.masterKey,
+        data: options.data
+    };
+    return utils.http('put', 'migrations/' + config.data.id, config);
+}
+
+// Commit migrations
+function commitMigrations(options) {
+    // Commit migrations
+    var config = { 
+        baseURL: options.baseURL, 
+        apiKey: options.apiKey, 
+        masterKey: options.masterKey
+    };
+    return utils.http('post', 'migrations/commit', config);
+}
+
+// Revert migrations
+function revertMigration(options) {
+    // Commit migrations
+    var config = { 
+        baseURL: options.baseURL, 
+        apiKey: options.apiKey, 
+        masterKey: options.masterKey
+    };
+    return utils.http('post', 'migrations/revert', config);
+}
+
+// Reset migrations
+function resetMigrations(options) {
+    // Commit migrations
+    var config = { 
+        baseURL: options.baseURL, 
+        apiKey: options.apiKey, 
+        masterKey: options.masterKey
+    };
+    return utils.http('post', 'migrations/reset', config);
+}

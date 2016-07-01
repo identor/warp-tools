@@ -1,0 +1,27 @@
+{
+  "name": "warp-tools",
+  "version": "1.0.0",
+  "description": "Warp CLI Tools",
+  "preferGlobal": true,
+  "main": "bin/warp",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "warp": "bin/warp"
+  },
+  "keywords": [
+    "warp",
+    "tools",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "mkdirp": "^0.5.1",
+    "moment-timezone": "^0.5.4",
+    "promise": "^7.1.1",
+    "request": "^2.72.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+    "id": "__id__",
+    "up": {
+        "create": {
+            "user": {
+                "username": {
+                    "type": "string",
+                    "size": "60",
+                    "addons": ["unique"]
+                },
+                "password": "password",
+                "email": "email"
+            },
+            "session": {
+                "user": "pointer",
+                "origin": "string",
+                "session_token": {
+                    "type": "string",
+                    "size": 100
+                }
+            }
+        }
+    },
+    "down": {
+        "drop": ["user", "session"]
+    }
+}
