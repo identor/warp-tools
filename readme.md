@@ -1,7 +1,7 @@
 Warp Tools
 ===================
 
-__Warp Tools_ is a command line tool for the Warp Framework. It is designed to work with projects built on-top of the [WarpServer](http://github.com/jakejosol/warp-server).
+__Warp Tools__ is a command line tool for the Warp Framework. It is designed to work with projects built on-top of the [WarpServer](http://github.com/jakejosol/warp-server).
 
 ## Installation
 
