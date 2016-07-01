@@ -3,7 +3,7 @@ Warp Tools
 
 __Warp Tools__ is a command line tool for the Warp Framework. It is designed to work with projects built on-top of the [WarpServer](http://github.com/jakejosol/warp-server).
 
-## Installation
+# Installation
 
 To install Warp Tools via npm, simply use the install command to save it globally:
 
@@ -11,7 +11,7 @@ To install Warp Tools via npm, simply use the install command to save it globall
 npm install -g warp-tools
 ```
 
-## Getting Started
+# Getting Started
 
 ### Creating a New Project
 
@@ -77,7 +77,7 @@ To initialize Warp Tools in an existing Warp project, simply execute the followi
 warp init
 ```
 
-## Migrations
+# Migrations
 
 ### Creating a new Migration
 
