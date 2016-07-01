@@ -149,6 +149,9 @@ program
         .then(function() {
             return initApplication({ baseURL: 'localhost:3000', apiKey: options.apiKey, masterKey: options.masterKey });
         })
+        .then(function() {
+            console.log(logHeader(), 'Successfully created `' + appName + '`!')
+        })
         .catch(function(err) {
             console.error(logHeader(), err.message, err.stack);
             process.exit();
@@ -502,6 +505,9 @@ function createApplication(appName, path, options) {
     var migrationID = moment().tz('UTC').format('YYYYMMDDHHmm') + '-initial-migration';
     migration = migration.replace('__id__', migrationID)
 
+    // Add a line break
+    console.log();
+
     utils.mkdir(path)
     .then(function(){
         // Write root files
@@ -572,7 +578,7 @@ function createApplication(appName, path, options) {
         // Make bin directory
         utils.mkdir(path + '/bin').then(function(){
             utils.write(path + '/bin/www', www, 0755);
-        });        
+        });
     });
 }
 
