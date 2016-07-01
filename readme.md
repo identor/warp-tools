@@ -8,7 +8,7 @@ __Warp Tools_ is a command line tool for the Warp Framework. It is designed to w
 To install Warp Tools via npm, simply use the install command to save it globally:
 
 ```javascript
-npm install --save warp-tools
+npm install -g warp-tools
 ```
 
 ## Getting Started
