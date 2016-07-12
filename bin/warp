@@ -552,9 +552,9 @@ function createApplication(appName, path, options) {
                         utils.write(path + '/app/server/queues/.gitkeep', '');
                     });
                     
-                    // Make routes directory
-                    utils.mkdir(path + '/app/server/routes').then(function(){
-                        utils.write(path + '/app/server/routes/index.js', index);
+                    // Make routers directory
+                    utils.mkdir(path + '/app/server/routers').then(function(){
+                        utils.write(path + '/app/server/routers/index.js', index);
                     });
                     
                     // Make views directory
