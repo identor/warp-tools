@@ -16,6 +16,6 @@ module.exports = WarpServer.Model.create({
             }
         }
     },
-    // Auto-generates tokens for each session
-    beforeSave: WarpServer.Model.PreSave.Session
+    // Auto-generates tokens for each session; Lasts 30 days
+    beforeSave: WarpServer.Model.PreSave.Session(30)
 });
