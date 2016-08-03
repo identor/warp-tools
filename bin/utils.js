@@ -73,7 +73,7 @@ module.exports = {
     // Write file
     write: function(path, str, mode) {        
         fs.writeFileSync(path, str, { mode: mode || 0666 });
-        console.log(this.logHeader(), 'Create : ' + path);
+        console.log(this.logHeader(), 'Create: ' + path);
     },
     
     // Make directory
@@ -81,7 +81,7 @@ module.exports = {
         return new Promise(function(resolve, reject) {
             mkdirp(path, 0755, function(err) {
                 if(err) return reject(err);                
-                console.log(this.logHeader(), 'Create : ' + path);
+                console.log(this.logHeader(), 'Create: ' + path);
                 resolve();
             }.bind(this)); 
         }.bind(this));

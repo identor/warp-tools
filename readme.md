@@ -84,7 +84,7 @@ warp init
 To create a new Migration, simply execute the following command:
 
 ```bash
-warp migrate:new <id> [destination]
+warp migration:new <id> [destination]
 ```
 
 For example:
@@ -100,7 +100,7 @@ warp migration:new create-alien-table
 To save a Migration to the backend, simply execute the following command:
 
 ```bash
-warp migrate:save <id> [destination]
+warp migration:save <id> [destination]
 ```
 
 For example:
@@ -116,7 +116,7 @@ warp migration:save create-alien-table
 To update a Migration in the backend, simply execute the following command:
 
 ```bash
-warp migrate:update <id> [destination]
+warp migration:update <id> [destination]
 ```
 
 For example:
@@ -132,7 +132,7 @@ warp migration:update create-alien-table
 To commit pending Migrations in the backend, simply execute the following command:
 
 ```bash
-warp migrate:commit
+warp migration:commit
 ```
 
 For example:
@@ -148,7 +148,7 @@ warp migration:commit
 To revert the latest Migration in the backend, simply execute the following command:
 
 ```bash
-warp migrate:revert
+warp migration:revert
 ```
 
 For example:
@@ -164,7 +164,7 @@ warp migration:revert
 To reset Migrations in the backend, simply execute the following command:
 
 ```bash
-warp migrate:reset
+warp migration:reset
 ```
 
 For example:

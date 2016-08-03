@@ -143,14 +143,14 @@ program
             return;
         })
         .then(function() {
-            process.stdin.destroy();
             return createApplication(appName, destination, options);
         })
         .then(function() {
-            return initApplication({ baseURL: 'localhost:3000', apiKey: options.apiKey, masterKey: options.masterKey });
+            return initApplication({ path: destination + '/', baseURL: 'localhost:3000', apiKey: options.apiKey, masterKey: options.masterKey });
         })
         .then(function() {
-            console.log(logHeader(), 'Successfully created `' + appName + '`!')
+            console.log(logHeader(), 'Successfully created `' + appName + '`!');
+            process.stdin.destroy();
         })
         .catch(function(err) {
             console.error(logHeader(), err.message, err.stack);
@@ -508,76 +508,88 @@ function createApplication(appName, path, options) {
     // Add a line break
     console.log();
 
-    utils.mkdir(path)
-    .then(function(){
-        // Write root files
-        utils.write(path + '/package.json', JSON.stringify(pkg, null, 2) + '\n');
-        utils.write(path + '/app.js', app);
-        utils.write(path + '/.gitignore', gitignore);
-        
-        // Make public directory
-        utils.mkdir(path + '/public').then(function() {
-            utils.mkdir(path + '/public/javascripts');
-            utils.mkdir(path + '/public/images');
-            utils.mkdir(path + '/public/stylesheets');
-            utils.mkdir(path + '/public/storage');
-        });
-        
-        // Make app directory
-        utils.mkdir(path + '/app').then(function() {
+    return new Promise(function(resolve, reject) {
+        utils.mkdir(path)
+        .then(function(){
+            // Write root files
+            utils.write(path + '/package.json', JSON.stringify(pkg, null, 2) + '\n');
+            utils.write(path + '/app.js', app);
+            utils.write(path + '/.gitignore', gitignore);
+            
+            // Make public directory
+            utils.mkdir(path + '/public').then(function() {
+                utils.mkdir(path + '/public/javascripts');
+                utils.mkdir(path + '/public/images');
+                utils.mkdir(path + '/public/stylesheets');
+                utils.mkdir(path + '/public/storage');
+            });
+            
+            // Make app directory
+            utils.mkdir(path + '/app').then(function() {
                 // Make app server
-                utils.mkdir(path + '/app/server').then(function() {
-                    // Write API
-                    utils.write(path + '/app/server/api.js', api);
-                    
-                    // Make models directory
-                    utils.mkdir(path + '/app/server/models').then(function() {
-                        utils.write(path + '/app/server/models/user.js', user);
-                        utils.write(path + '/app/server/models/session.js', session);
-                    });
-                
-                    // Make functions directory
-                    utils.mkdir(path + '/app/server/functions').then(function() {
-                        utils.write(path + '/app/server/functions/.gitkeep', '');
-                    });
-
-                    // Make migrations directory
-                    utils.mkdir(path + '/app/server/migrations').then(function() {
-                        utils.write(path + '/app/server/migrations/.gitkeep', '');
-                        utils.write(path + '/app/server/migrations/' + migrationID + '.json', migration);
-                    });
-                    
-                    // Make queues directory
-                    utils.mkdir(path + '/app/server/queues').then(function() {
-                        utils.write(path + '/app/server/queues/.gitkeep', '');
-                    });
-                    
-                    // Make routers directory
-                    utils.mkdir(path + '/app/server/routers').then(function(){
-                        utils.write(path + '/app/server/routers/index.js', index);
-                    });
-                    
-                    // Make views directory
-                    utils.mkdir(path + '/app/server/views').then(function(){
-                        utils.write(path + '/app/server/views/index.htm', indexHtm);
-                    });
+                return utils.mkdir(path + '/app/server');
+            }).then(function() {
+                // Write API
+                utils.write(path + '/app/server/api.js', api);
+                        
+                // Make models directory
+                return utils.mkdir(path + '/app/server/models').then(function() {
+                    utils.write(path + '/app/server/models/user.js', user);
+                    utils.write(path + '/app/server/models/session.js', session);
                 });
-                
+            }).then(function() {
+                // Make functions directory
+                return utils.mkdir(path + '/app/server/functions').then(function() {
+                    utils.write(path + '/app/server/functions/.gitkeep', '');
+                });
+            })
+            .then(function() {
+                // Make migrations directory
+                return utils.mkdir(path + '/app/server/migrations').then(function() {
+                    utils.write(path + '/app/server/migrations/.gitkeep', '');
+                    utils.write(path + '/app/server/migrations/' + migrationID + '.json', migration);
+                });
+            })
+            .then(function() {
+                // Make queues directory
+                return utils.mkdir(path + '/app/server/queues').then(function() {
+                    utils.write(path + '/app/server/queues/.gitkeep', '');
+                });
+            })
+            .then(function() {
+                // Make routers directory
+                return utils.mkdir(path + '/app/server/routers').then(function(){
+                    utils.write(path + '/app/server/routers/index.js', index);
+                });
+            })
+            .then(function() {
+                // Make views directory
+                return utils.mkdir(path + '/app/server/views').then(function(){
+                    utils.write(path + '/app/server/views/index.htm', indexHtm);
+                });
+            })
+            .then(function() {
                 // Make app client
-                utils.mkdir(path + '/app/client').then(function() {
-                    // Make subclasses directory
-                    utils.mkdir(path + '/app/client/subclasses').then(function() {
-                       utils.write(path + '/app/client/subclasses/.gitkeep', ''); 
-                    });
-                    
-                    // Write main.js
-                    utils.write(path + '/app/client/main.js', main);
+                return utils.mkdir(path + '/app/client');
+            }).then(function() {
+                // Make subclasses directory
+                return utils.mkdir(path + '/app/client/subclasses').then(function() {
+                    utils.write(path + '/app/client/subclasses/.gitkeep', ''); 
                 });
-        });
-        
-        // Make bin directory
-        utils.mkdir(path + '/bin').then(function(){
-            utils.write(path + '/bin/www', www, 0755);
+            })
+            .then(function() {
+                // Write main.js
+                utils.write(path + '/app/client/main.js', main);
+            })
+            .then(function() {
+                // Make bin directory
+                return utils.mkdir(path + '/bin').then(function(){
+                    utils.write(path + '/bin/www', www, 0755);
+                });
+            })
+            .then(function() {
+                resolve();
+            });            
         });
     });
 }
@@ -591,7 +603,7 @@ function initApplication(options) {
         masterKey: options.masterKey
     };
 
-    utils.write('warp-config.json', JSON.stringify(cfg, null, 2) + '\n');
+    utils.write((options.path || '') + 'warp-config.json', JSON.stringify(cfg, null, 2) + '\n');
 }
 
 // Create migration file
