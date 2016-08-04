@@ -12,7 +12,7 @@
                 "email": "email"
             },
             "session": {
-                "user": "pointer",
+                "user_id": "pointer",
                 "origin": "string",
                 "session_token": {
                     "type": "string",
