@@ -53,7 +53,7 @@ program
                 options.baseURL = baseURL || options.baseURL;
 
             if(!program.api)
-                return utils.ask('Enter API Key: ');
+                return utils.ask('Enter API key: ');
             else
                 return;
         })
@@ -62,7 +62,7 @@ program
                 options.apiKey = apiKey || options.apiKey;
             
             if(!program.master)
-                return utils.ask('Enter Master Key: ');
+                return utils.ask('Enter master key: ');
             else
                 return;
         })
@@ -112,31 +112,31 @@ program
                 return;
         })
         .then(function() {
-            return utils.ask('Enter Desired API Key [auto-generated key]: ');
+            return utils.ask('Enter desired API key [auto-generated key]: ');
         })
         .then(function(apiKey) {
             options.apiKey = apiKey || options.apiKey;
-            return utils.ask('Enter Desired Master Key [auto-generated key]: ');
+            return utils.ask('Enter desired master key [auto-generated key]: ');
         })
         .then(function(masterKey) {
             options.masterKey = masterKey || options.masterKey;
-            return utils.ask('Enter DB Host [localhost]: ');
+            return utils.ask('Enter DB host [localhost]: ');
         })
         .then(function(dbHost) {
             options.dbHost = dbHost || options.dbHost;
-            return utils.ask('Enter DB Port [3306]: ');
+            return utils.ask('Enter DB port [3306]: ');
         })
         .then(function(dbPort) {
             options.dbPort = parseInt(dbPort || options.dbPort);
-            return utils.ask('Enter DB User [root]: ');
+            return utils.ask('Enter DB user [root]: ');
         })
         .then(function(dbUser) {
             options.dbUser = dbUser || options.dbUser;
-            return utils.ask('Enter DB Password: ');
+            return utils.ask('Enter DB password: ');
         })
         .then(function(dbPassword) {
             options.dbPassword = dbPassword || options.dbPassword;
-            return utils.ask('Enter Default DB: ');
+            return utils.ask('Enter default DB: ');
         })
         .then(function(dbDefault) {
             options.dbDefault = dbDefault || options.dbDefault;
@@ -146,7 +146,7 @@ program
             return createApplication(appName, destination, options);
         })
         .then(function() {
-            return initApplication({ path: destination + '/', baseURL: 'localhost:3000', apiKey: options.apiKey, masterKey: options.masterKey });
+            return initApplication({ path: destination + '/', baseURL: 'http://localhost:3000/api/1', apiKey: options.apiKey, masterKey: options.masterKey });
         })
         .then(function() {
             console.log(logHeader(), 'Successfully created `' + appName + '`!');
@@ -157,6 +157,92 @@ program
             process.exit();
         });
     });
+
+
+/**
+ * Define a new deployment slot
+ * 
+ * @params deployName
+ * @result project directory
+ */
+program
+    .command('deploy:new <deployName>')
+    .action(function(deployName) {
+        console.log(logHeader(), 'Creating deployment for `' + deployName + '`...');
+        
+        var options = {
+            host: '',
+            user: '',
+            password: '',
+            deploy_key: '',
+            app_user: '',
+            app_path: '',
+            repo_remote: '',
+            repo_branch: '',
+            after_script: []
+        };
+
+        var configFile = JSON.parse(utils.loadFile(path.join(process.cwd(), 'warp.config.json')));
+        
+        utils.ask('Enter Deployment Host: ')
+        .then(function(host) {
+            options.host = host;
+            return utils.ask('Enter deployment user: ');
+        })
+        .then(function(user) {
+            options.user = user;
+            return utils.ask('Enter deployment password [Leave blank, if using a deploy key]: ');
+        })
+        .then(function(password) {
+            options.password = password;
+            return utils.ask('Enter path to deploy key [Leave blank, if using a password]: ');
+        })
+        .then(function(deployKey) {
+            options.deploy_key = deployKey;
+            return utils.ask('Enter app user: ');
+        })
+        .then(function(appUser) {
+            options.app_user = appUser;
+            return utils.ask('Enter app path: ');
+        })
+        .then(function(appPath) {
+            options.app_path;
+            return utils.ask('Enter remote repo name: ');
+        })
+        .then(function(repoRemote) {
+            options.repo_remote = repoRemote;
+            return utils.ask('Enter remote repo branch: ');
+        })
+        .then(function() {
+            configFile.deployment[deployName] = options;
+            return utils.write(path.join(process.cwd(), 'warp.config.json'), JSON.stringify(configFile, null, 2) + '\n');
+        })
+        .then(function() {
+            console.log(logHeader(), 'Successfully created `' + deployName + '`!');
+            process.stdin.destroy();
+        })
+        .catch(function(err) {
+            console.error(logHeader(), err.message, err.stack);
+            process.exit();
+        });
+    });
+
+/**
+ * Remove a deployment slot
+ * 
+ * @params deployName
+ * @result project directory
+ */
+program
+    .command('deploy:remove <deployName>')
+    .action(function(deployName) {
+        console.log(logHeader(), 'Removing deployment for `' + deployName + '`...');
+        
+        var configFile = JSON.parse(utils.loadFile(path.join(process.cwd(), 'warp.config.json')));
+        delete configFile.deployment[deployName];
+        return utils.write(path.join(process.cwd(), 'warp.config.json'), JSON.stringify(configFile, null, 2) + '\n');
+    });
+        
 
 /**
  * Create Migration File
@@ -213,7 +299,7 @@ program
         // Saving migration
         Promise.resolve()
         .then(function() {
-            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
@@ -269,7 +355,7 @@ program
         // Saving migration
         Promise.resolve()
         .then(function() {
-            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
@@ -322,7 +408,7 @@ program
         // Commiting migrations
         Promise.resolve()
         .then(function() {
-            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
@@ -372,7 +458,7 @@ program
         // Reverting latest migration
         Promise.resolve()
         .then(function() {
-            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
@@ -422,7 +508,7 @@ program
         // Resetting migrations
         Promise.resolve()
         .then(function() {
-            var configFile = utils.loadFile(path.join(process.cwd(), 'warp-config.json'));
+            var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
@@ -480,7 +566,10 @@ function createApplication(appName, path, options) {
         name: appName, 
         version: '0.0.0', 
         private: true, 
-        scripts: { start: 'node ./bin/www' }, 
+        scripts: { 
+            start: 'node ./bin/www',
+            compile: 'browserify -t reactify app/client/main.js > public/javascripts/main.js'
+        }, 
         dependencies: {
             'express': '^4.13.4',
             'moment-timezone': '^0.5.4',
@@ -596,14 +685,15 @@ function createApplication(appName, path, options) {
 
 // Initialize Application
 function initApplication(options) {
-    // Create warp-config.json
+    // Create warp.config.json
     var cfg = {
         baseURL: options.baseURL,
         apiKey: options.apiKey,
-        masterKey: options.masterKey
+        masterKey: options.masterKey,
+        deployment: {}
     };
 
-    utils.write((options.path || '') + 'warp-config.json', JSON.stringify(cfg, null, 2) + '\n');
+    utils.write((options.path || '') + 'warp.config.json', JSON.stringify(cfg, null, 2) + '\n');
 }
 
 // Create migration file
