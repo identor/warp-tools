@@ -569,7 +569,7 @@ function createApplication(appName, path, options) {
         scripts: { 
             start: 'node ./bin/www',
             'compile-scripts': 'browserify -t [ babelify --presets [ es2015 react ] ] app/client/default.js > public/javascripts/default.js',
-            'compile-styles': 'cleancss -o public/stylesheets/default.css app/client/stylesheets/default.css',
+            'compile-styles': 'cleancss -o public/stylesheets/default.css app/client/stylesheets/default.css'
         }, 
         dependencies: {
             'express': '^4.13.4',
@@ -669,13 +669,14 @@ function createApplication(appName, path, options) {
             .then(function() {
                 // Make app client
                 return utils.mkdir(path + '/app/client');
-            }).then(function() {
+            })
+            .then(function() {
                 // Make subclasses directory
                 return utils.mkdir(path + '/app/client/subclasses').then(function() {
                     utils.write(path + '/app/client/subclasses/.gitkeep', ''); 
                 });
             })
-            }).then(function() {
+            .then(function() {
                 // Make stylesheets directory
                 return utils.mkdir(path + '/app/client/stylesheets').then(function() {
                     utils.write(path + '/app/client/stylehseets/.gitkeep', '');
