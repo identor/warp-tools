@@ -89,8 +89,13 @@ module.exports = {
 
     // Make http request
     http: function(type, endpoint, options) {
+        if(!options.environment) 
+        {
+            console.log(this.logHeader(), 'Error: Missing environment config');
+            return;
+        }
         var config = {
-            url: options.baseURL + '/' + endpoint,
+            url: path.join(options.baseURL[options.environment], endpoint),
             headers: {
                 'X-Warp-API-Key': options.apiKey,
                 'X-Warp-Master-Key': options.masterKey
