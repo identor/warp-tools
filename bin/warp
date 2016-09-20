@@ -146,7 +146,12 @@ program
             return createApplication(appName, destination, options);
         })
         .then(function() {
-            return initApplication({ path: destination + '/', baseURL: 'http://localhost:3000/api/1', apiKey: options.apiKey, masterKey: options.masterKey });
+            return initApplication({ 
+                path: destination + '/', 
+                baseURL: 'http://localhost:3000/api/1',
+                apiKey: options.apiKey, 
+                masterKey: options.masterKey 
+            });
         })
         .then(function() {
             console.log(logHeader(), 'Successfully created `' + appName + '`!');
@@ -679,7 +684,7 @@ function createApplication(appName, path, options) {
             .then(function() {
                 // Make stylesheets directory
                 return utils.mkdir(path + '/app/client/stylesheets').then(function() {
-                    utils.write(path + '/app/client/stylehseets/.gitkeep', '');
+                    utils.write(path + '/app/client/stylesheets/.gitkeep', '');
                 });
             })
             .then(function() {

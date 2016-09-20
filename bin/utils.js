@@ -91,7 +91,7 @@ module.exports = {
     http: function(type, endpoint, options) {
         if(!options.environment) 
         {
-            console.log(this.logHeader(), 'Error: Missing environment config');
+            console.error(this.logHeader(), 'Error: Missing environment config');
             return;
         }
         var config = {
