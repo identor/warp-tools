@@ -95,7 +95,7 @@ module.exports = {
             return;
         }
         var config = {
-            url: path.join(options.baseURL[options.environment], endpoint),
+            url: options.baseURL[options.environment].replace(/\/$/, "") + '/' + endpoint,
             headers: {
                 'X-Warp-API-Key': options.apiKey,
                 'X-Warp-Master-Key': options.masterKey
