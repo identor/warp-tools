@@ -307,7 +307,8 @@ program
             var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
-                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
+                environment: acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
@@ -327,6 +328,7 @@ program
             var migration = JSON.parse(utils.loadFile(file));
             var config = { 
                 baseURL: options.baseURL,
+                environment: options.environment,
                 apiKey: options.apiKey, 
                 masterKey: options.masterKey,
                 data: migration
@@ -363,7 +365,8 @@ program
             var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
-                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
+                environment: acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
@@ -416,7 +419,8 @@ program
             var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
-                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
+                environment: acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
@@ -466,7 +470,8 @@ program
             var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
-                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
+                environment: acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
@@ -516,7 +521,8 @@ program
             var configFile = utils.loadFile(path.join(process.cwd(), 'warp.config.json'));
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
-                baseURL: program.server || acfg.baseURL || 'http://localhost:3000/api/1',
+                baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
+                environment: acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
@@ -756,7 +762,7 @@ function saveMigration(options) {
     // Save migration file
     var config = { 
         baseURL: options.baseURL, 
-        environment: options.environment || 'development',
+        environment: options.environment,
         apiKey: options.apiKey, 
         masterKey: options.masterKey,
         data: options.data
@@ -769,7 +775,7 @@ function updateMigration(options) {
     // Save migration file
     var config = { 
         baseURL: options.baseURL, 
-        environment: options.environment || 'development',
+        environment: options.environment,
         apiKey: options.apiKey, 
         masterKey: options.masterKey,
         data: options.data
@@ -782,7 +788,7 @@ function commitMigrations(options) {
     // Commit migrations
     var config = { 
         baseURL: options.baseURL, 
-        environment: options.environment || 'development',
+        environment: options.environment,
         apiKey: options.apiKey, 
         masterKey: options.masterKey
     };
@@ -794,7 +800,7 @@ function revertMigration(options) {
     // Commit migrations
     var config = { 
         baseURL: options.baseURL, 
-        environment: options.environment || 'development',
+        environment: options.environment,
         apiKey: options.apiKey, 
         masterKey: options.masterKey
     };
