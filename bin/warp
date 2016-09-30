@@ -20,6 +20,7 @@ program
     .version(pakg.version)
     .option('-c, --config [file]', 'Config File')
     .option('-s, --server [url]', 'Server URL')
+    .option('-e, --env [name]', 'Environment name')
     .option('-a, --api [key]', 'API Key')
     .option('-m, --master [key]', 'Master Key');
 
@@ -308,7 +309,7 @@ program
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
-                environment: acfg.environment || 'development',
+                environment: program.env || acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
@@ -366,7 +367,7 @@ program
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
-                environment: acfg.environment || 'development',
+                environment: program.env || acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
@@ -420,7 +421,7 @@ program
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
-                environment: acfg.environment || 'development',
+                environment: program.env || acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
@@ -471,7 +472,7 @@ program
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
-                environment: acfg.environment || 'development',
+                environment: program.env || acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
@@ -522,7 +523,7 @@ program
             var acfg = configFile? JSON.parse(configFile) : {};
             var options = {
                 baseURL: program.server || acfg.baseURL || { development: 'http://localhost:3000/api/1' },
-                environment: acfg.environment || 'development',
+                environment: program.env || acfg.environment || 'development',
                 apiKey: program.api || acfg.apiKey || '',
                 masterKey: program.master || acfg.masterKey || ''
             };
