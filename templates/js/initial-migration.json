@@ -17,7 +17,8 @@
                 "session_token": {
                     "type": "string",
                     "size": 100
-                }
+                },
+                "revoked_at": "datetime"
             }
         }
     },
