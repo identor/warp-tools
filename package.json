@@ -1,6 +1,6 @@
 {
   "name": "warp-tools",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Warp CLI Tools",
   "preferGlobal": true,
   "main": "bin/warp",
