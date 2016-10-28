@@ -7,6 +7,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dividedbyzeroco/warp-tools.git"
+  },
   "bin": {
     "warp": "bin/warp"
   },
@@ -17,6 +21,10 @@
   ],
   "author": "",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dividedbyzeroco/warp-tools/issues"
+  },
+  "homepage": "https://github.com/dividedbyzeroco/warp-tools#readme",
   "dependencies": {
     "commander": "^2.9.0",
     "mkdirp": "^0.5.1",
