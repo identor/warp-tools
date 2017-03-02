@@ -387,6 +387,7 @@ program
             var migration = JSON.parse(utils.loadFile(file));
             var config = { 
                 baseURL: options.baseURL,
+                environment: options.environment,
                 apiKey: options.apiKey, 
                 masterKey: options.masterKey,
                 data: migration
@@ -439,6 +440,7 @@ program
         .then(function(options) {
             var config = { 
                 baseURL: options.baseURL,
+                environment: options.environment,
                 apiKey: options.apiKey, 
                 masterKey: options.masterKey
             };
