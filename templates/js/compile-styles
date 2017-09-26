@@ -8,8 +8,9 @@ const moment = require('moment-timezone');
 const package = require('../package.json');
 
 // Set source file and browserify options
+const version = package.version.split('.').join('-');
 const source = path.resolve(__dirname, '../app/client/stylesheets/default.less');
-const outfile = path.resolve(__dirname, `../public/stylesheets/default-${package.version}.css`);
+const outfile = path.resolve(__dirname, `../public/stylesheets/default-${version}.css`);
 
 // Prepare less plugin
 const cleanCSSPlugin = new LessPluginCleanCSS({ advanced: true });
@@ -36,7 +37,7 @@ try
         // Write file
         fs.writeFileSync(outfile, output.css);
 
-        console.log('[ Compiler', moment().format(), `] Successfully compiled prod file: default-${package.version}.css!`);
+        console.log('[ Compiler', moment().format(), `] Successfully compiled prod file: default-${version}.css!`);
         console.log();
         console.log('Finished build in ', (Date.now() - beginTime), 'ms');
         console.log();

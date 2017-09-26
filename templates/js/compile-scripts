@@ -15,8 +15,9 @@ program
 .parse(process.argv);
 
 // Set source file and browserify options
+const version = package.version.split('.').join('-');
 const source = path.resolve(__dirname, '../app/client/default.js');
-const outfile = path.resolve(__dirname, `../public/javascripts/default-${package.version}.js`);
+const outfile = path.resolve(__dirname, `../public/javascripts/default-${version}.js`);
 const presets = ['es2015', 'react'];
 
 // Run script template
@@ -40,7 +41,7 @@ try
             throw err;
         })
         .on('end', end => {
-            console.log('[ Compiler', moment().format(), `] Successfully compiled dev file: default-${package.version}.js !`);
+            console.log('[ Compiler', moment().format(), `] Successfully compiled dev file: default-${version}.js !`);
             console.log();
             console.log('Finished build in ', (Date.now() - beginTime), 'ms');
             console.log();
@@ -56,7 +57,7 @@ try
             throw err;
         })
         .on('end', end => {
-            console.log('[ Compiler', moment().format(), `] Successfully compiled prod file: default-${package.version}.js!`);
+            console.log('[ Compiler', moment().format(), `] Successfully compiled prod file: default-${version}.js!`);
             console.log();
             console.log('Finished build in ', (Date.now() - beginTime), 'ms');
             console.log();
