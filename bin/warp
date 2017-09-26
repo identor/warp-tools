@@ -569,8 +569,10 @@ function createApplication(appName, path, options) {
     var user = utils.loadTemplate('js/user.js');
     var session = utils.loadTemplate('js/session.js');
     var www = utils.loadTemplate('js/www');
+    var compileScrips = utils.loadTemplate('js/compile-scripts');
+    var compileStyles = utils.loadTemplate('js/compile-styles');
     var index = utils.loadTemplate('js/index.js');
-    var indexHtm = utils.loadTemplate('htm/index.htm');
+    var indexPug = utils.loadTemplate('htm/index.pug');
     var gitignore = utils.loadTemplate('gitignore');
     var main = utils.loadTemplate('js/default.js');
     var migration = utils.loadTemplate('js/initial-migration.json');
@@ -582,15 +584,16 @@ function createApplication(appName, path, options) {
         private: true, 
         scripts: { 
             start: 'node ./bin/www',
-            'compile-scripts-dev': 'browserify -t [ babelify --presets [ es2015 react ] ] app/client/default.js > public/javascripts/default.js',
-            'compile-scripts': 'browserify -t [ babelify --presets [ es2015 react ] ] -p [minifyify --no-map] app/client/default.js > public/javascripts/default.js',
-            'compile-styles': 'lessc app/client/stylesheets/default.less | cleancss -o public/stylesheets/default.css -r app/client/stylesheets'
+            'compile-scripts-dev': 'node ./bin/compile-scripts --dev',
+            'compile-scripts': 'env NODE_ENV=production node ./bin/compile-scripts',
+            'compile-styles': 'node ./bin/compile-styles'
         }, 
         dependencies: {
             'express': '^4.13.4',
             'moment-timezone': '^0.5.4',
             'morgan': '^1.7.0',
             'promise': '^7.1.1',
+            "pug": "^2.0.0-rc.4",
             'underscore': '^1.8.3',
             'warp-sdk-js': '^1.1.7',
             'warp-server': '^2.3.18'
@@ -600,7 +603,8 @@ function createApplication(appName, path, options) {
             'babel-preset-react': '^6.11.1',
             'babelify': '^7.3.0',
             'clean-css': '^3.4.19',
-            'less': '^2.7.1',
+            "less": "^2.7.2",
+            "less-plugin-clean-css": "^1.5.1",
             'react': '^15.3.1',
             'react-dom': '^15.3.1'
         }
@@ -679,7 +683,7 @@ function createApplication(appName, path, options) {
             .then(function() {
                 // Make views directory
                 return utils.mkdir(path + '/app/server/views').then(function(){
-                    utils.write(path + '/app/server/views/index.htm', indexHtm);
+                    utils.write(path + '/app/server/views/index.pug', indexPug);
                 });
             })
             .then(function() {
@@ -706,6 +710,8 @@ function createApplication(appName, path, options) {
                 // Make bin directory
                 return utils.mkdir(path + '/bin').then(function(){
                     utils.write(path + '/bin/www', www, 0755);
+                    utils.write(path + '/bin/compile-scripts', compileScripts, 0755);
+                    utils.write(path + '/bin/compile-styles', compileStyles, 0755);
                 });
             })
             .then(function() {

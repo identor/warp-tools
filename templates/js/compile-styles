@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+// References
+const fs = require('fs');
+const path = require('path');
+const less = require('less');
+const LessPluginCleanCSS = require('less-plugin-clean-css');
+const moment = require('moment-timezone');
+const package = require('../package.json');
+
+// Set source file and browserify options
+const source = path.resolve(__dirname, '../app/client/stylesheets/default.less');
+const outfile = path.resolve(__dirname, `../public/stylesheets/default-${package.version}.css`);
+
+// Prepare less plugin
+const cleanCSSPlugin = new LessPluginCleanCSS({ advanced: true });
+
+// Run script template
+try
+{
+    // Create the outfile
+    fs.closeSync(fs.openSync(outfile, 'w'));
+    
+    // Log the start of the process
+    console.log('[ Compiler', moment().format(), '] Started compiling...');
+    let beginTime = Date.now();
+    
+    // Start compiling
+    var data = fs.readFileSync(source, 'utf8').toString();
+    
+    // Render the file
+    less.render(data, {
+        plugins: [cleanCSSPlugin],
+        filename: source
+    })
+    .then(function(output) {
+        // Write file
+        fs.writeFileSync(outfile, output.css);
+
+        console.log('[ Compiler', moment().format(), `] Successfully compiled prod file: default-${package.version}.css!`);
+        console.log();
+        console.log('Finished build in ', (Date.now() - beginTime), 'ms');
+        console.log();
+    }, function(error) {
+        console.error('[ Compiler', moment().format(), ']', error);
+    });
+}
+catch(err)
+{
+    console.error('[ Compiler', moment().format(), ']', err.message);
+}

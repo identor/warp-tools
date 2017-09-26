@@ -1,0 +1,69 @@
+#!/usr/bin/env node
+// References
+const program = require('commander');
+const fs = require('fs');
+const path = require('path');
+const browserify = require('browserify');
+const moment = require('moment-timezone');
+const package = require('../package.json');
+
+// Initialize the program
+program
+.version('1.0.0')
+.usage('[options]')
+.option('-d, --dev', 'Development mode')
+.parse(process.argv);
+
+// Set source file and browserify options
+const source = path.resolve(__dirname, '../app/client/default.js');
+const outfile = path.resolve(__dirname, `../public/javascripts/default-${package.version}.js`);
+const presets = ['es2015', 'react'];
+
+// Run script template
+try
+{
+    // Create the outfile
+    fs.closeSync(fs.openSync(outfile, 'w'));
+
+    // Log the start of the process
+    console.log('[ Compiler', moment().format(), '] Started compiling...');
+    let beginTime = Date.now();
+
+    // Start compiling
+    if(program.dev)
+        browserify({ debug: true })
+        .add(source)
+        .transform('babelify', { presets: presets })
+        .bundle()
+        .on('error', err => {
+            this.emit('end');
+            throw err;
+        })
+        .on('end', end => {
+            console.log('[ Compiler', moment().format(), `] Successfully compiled dev file: default-${package.version}.js !`);
+            console.log();
+            console.log('Finished build in ', (Date.now() - beginTime), 'ms');
+            console.log();
+        })
+        .pipe(fs.createWriteStream(outfile));
+    else
+        browserify(source)
+        .transform('babelify', { presets: presets })
+        .transform('uglifyify')
+        .bundle()
+        .on('error', err => {
+            this.emit('end');
+            throw err;
+        })
+        .on('end', end => {
+            console.log('[ Compiler', moment().format(), `] Successfully compiled prod file: default-${package.version}.js!`);
+            console.log();
+            console.log('Finished build in ', (Date.now() - beginTime), 'ms');
+            console.log();
+        })
+        .pipe(fs.createWriteStream(outfile));
+}
+catch(err)
+{
+    console.error('[ Compiler', moment().format(), ']', err.message);
+}
