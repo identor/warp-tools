@@ -569,7 +569,7 @@ function createApplication(appName, path, options) {
     var user = utils.loadTemplate('js/user.js');
     var session = utils.loadTemplate('js/session.js');
     var www = utils.loadTemplate('js/www');
-    var compileScrips = utils.loadTemplate('js/compile-scripts');
+    var compileScripts = utils.loadTemplate('js/compile-scripts');
     var compileStyles = utils.loadTemplate('js/compile-styles');
     var index = utils.loadTemplate('js/index.js');
     var indexPug = utils.loadTemplate('htm/index.pug');
